@@ -9,10 +9,10 @@ function readExcelFile(filePath: string): void {
   const worksheet = workbook.Sheets[sheetName];
 
   // Convert the worksheet to a JSON object
-  const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+  const data: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
   // Process the data
-  data.forEach((row: any[], rowIndex: number) => {
+  data.forEach((row, rowIndex) => {
     if (rowIndex === 0) {
       // Handle header row
       console.log("Header:", row);
