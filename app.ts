@@ -1,3 +1,6 @@
+// Import the readExcelFile function from readexcel.ts
+import { readExcelFile } from "./readexcel";
+
 // Define the Employer interface
 interface Employer {
     id: number;
@@ -15,90 +18,6 @@ interface Employer {
     holidayBookingAvailability: number;
     dailyWorkPatternPossibilities: number;
 }
-
-// Sample employer data
-const employers: Employer[] = [
-    {
-        id: 1,
-        startTime: '3/23/24 14:02:32',
-        completionTime: '3/23/24 14:03:20',
-        email: 'anonymous',
-        name: '',
-        flexibleWorkingPolicies: 'Ability to purchase additional annual leave',
-        numberOfHoursFlexibility: 6,
-        flexibilityOfHours: 6,
-        flexibilityOfVenue: 4,
-        amountOfTravel: 8,
-        distanceOfTravel: 8,
-        overnightStays: 3,
-        holidayBookingAvailability: 8,
-        dailyWorkPatternPossibilities: 10
-    },
-    {
-        id: 2,
-        startTime: '3/23/24 14:52:28',
-        completionTime: '3/23/24 14:53:02',
-        email: 'anonymous',
-        name: '',
-        flexibleWorkingPolicies: 'Part time hours',
-        numberOfHoursFlexibility: 10,
-        flexibilityOfHours: 10,
-        flexibilityOfVenue: 10,
-        amountOfTravel: 5,
-        distanceOfTravel: 5,
-        overnightStays: 4,
-        holidayBookingAvailability: 10,
-        dailyWorkPatternPossibilities: 10
-    },
-    {
-        id: 3,
-        startTime: '3/23/24 14:53:38',
-        completionTime: '3/23/24 14:54:02',
-        email: 'anonymous',
-        name: '',
-        flexibleWorkingPolicies: 'TOIL',
-        numberOfHoursFlexibility: 2,
-        flexibilityOfHours: 3,
-        flexibilityOfVenue: 2,
-        amountOfTravel: 4,
-        distanceOfTravel: 4,
-        overnightStays: 1,
-        holidayBookingAvailability: 1,
-        dailyWorkPatternPossibilities: 1
-    },
-    {
-        id: 4,
-        startTime: '3/23/24 14:54:04',
-        completionTime: '3/23/24 14:54:21',
-        email: 'anonymous',
-        name: '',
-        flexibleWorkingPolicies: 'Ability to purchase additional annual leave',
-        numberOfHoursFlexibility: 5,
-        flexibilityOfHours: 5,
-        flexibilityOfVenue: 5,
-        amountOfTravel: 4,
-        distanceOfTravel: 4,
-        overnightStays: 3,
-        holidayBookingAvailability: 4,
-        dailyWorkPatternPossibilities: 3
-    },
-    {
-        id: 5,
-        startTime: '3/23/24 14:54:34',
-        completionTime: '3/23/24 14:54:56',
-        email: 'anonymous',
-        name: '',
-        flexibleWorkingPolicies: 'Carers policy',
-        numberOfHoursFlexibility: 7,
-        flexibilityOfHours: 7,
-        flexibilityOfVenue: 8,
-        amountOfTravel: 8,
-        distanceOfTravel: 8,
-        overnightStays: 3,
-        holidayBookingAvailability: 4,
-        dailyWorkPatternPossibilities: 5
-    }
-];
 
 // Function to calculate the difference between answers
 function calculateDifference(answer1: number, answer2: number): number {
@@ -121,6 +40,9 @@ function compareAnswers(employerAnswers: number[], employeeAnswers: number[]): n
 
 // Sample employee data (you would need to define this according to your requirements)
 const employeeAnswers: number[] = [7, 5, 6, 8, 6, 7, 8, 9, 10];
+
+// Read the employer data from the Excel file
+const employers: Employer[] = readExcelFile("path/to/your/excel/Employer_flexibility.xlsx");
 
 // Compare each employer with the employee
 employers.forEach((employer) => {
