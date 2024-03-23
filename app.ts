@@ -5,26 +5,30 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 function compareAnswers(
-  employerAnswers: QuestionnaireAnswers,
-  employeeAnswers: QuestionnaireAnswers
-): { overallScore: number; categoryScores: { [key: string]: number } } {
-  const answerKeys = Object.keys(employerAnswers) as Array<
-    keyof QuestionnaireAnswers
-  >;
-
-  const categoryScores: { [key: string]: number } = {};
-  let overallScore = 0;
-
-  answerKeys.forEach((key) => {
-    const employerAnswer = employerAnswers[key];
-    const employeeAnswer = employeeAnswers[key];
-    const difference = employerAnswer - employeeAnswer;
-    categoryScores[key] = difference;
-    overallScore += Math.abs(difference);
-  });
-
-  return { overallScore, categoryScores };
-}
+    employerAnswers: QuestionnaireAnswers,
+    employeeAnswers: QuestionnaireAnswers
+  ): { overallScore: number; categoryScores: { [key: string]: number } } {
+    const answerKeys = Object.keys(employerAnswers) as Array<
+      keyof QuestionnaireAnswers
+    >;
+  
+    const categoryScores: { [key: string]: number } = {};
+    let overallScore = 0;
+  
+    answerKeys.forEach((key) => {
+      const employerAnswer = employerAnswers[key];
+      const employeeAnswer = employeeAnswers[key];
+      const difference = employerAnswer - employeeAnswer;
+      categoryScores[key] = Math.abs(difference); // Adjusted to take absolute difference
+  
+      if (employerAnswer > employeeAnswer) {
+        overallScore += employerAnswer - employeeAnswer; // Include this for overall score calculation
+      }
+    });
+  
+    return { overallScore, categoryScores };
+  }
+  
 
 // Read the employer data from the Excel file
 const employers: ExcelAnswers[] = readEmployerFile(

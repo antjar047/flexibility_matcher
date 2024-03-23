@@ -35,8 +35,10 @@ function compareAnswers(employerAnswers, employeeAnswers) {
         const employerAnswer = employerAnswers[key];
         const employeeAnswer = employeeAnswers[key];
         const difference = employerAnswer - employeeAnswer;
-        categoryScores[key] = difference;
-        overallScore += Math.abs(difference);
+        categoryScores[key] = Math.abs(difference); // Adjusted to take absolute difference
+        if (employerAnswer > employeeAnswer) {
+            overallScore += employerAnswer - employeeAnswer; // Include this for overall score calculation
+        }
     });
     return { overallScore, categoryScores };
 }
