@@ -1,3 +1,4 @@
+"use strict";
 // Function to calculate the difference between answers
 function calculateDifference(answer1, answer2) {
     if (answer1 > answer2) {
@@ -9,16 +10,16 @@ function calculateDifference(answer1, answer2) {
 }
 // Function to compare answers and find the overall score
 function compareAnswers(employerAnswers, employeeAnswers) {
-    var totalDifference = 0;
-    for (var i = 0; i < employerAnswers.length; i++) {
-        var difference = calculateDifference(employerAnswers[i], employeeAnswers[i]);
+    let totalDifference = 0;
+    for (let i = 0; i < employerAnswers.length; i++) {
+        const difference = calculateDifference(employerAnswers[i], employeeAnswers[i]);
         totalDifference += difference;
     }
     return totalDifference;
 }
 // Sample employer and employee data
-var employerAnswers = [9, 6, 7, 9, 5, 6, 7, 8, 9];
-var employeeAnswers = [7, 5, 6, 8, 6, 7, 8, 9, 10];
+const employerAnswers = [9, 6, 7, 9, 5, 6, 7, 8, 9];
+const employeeAnswers = [7, 5, 6, 8, 6, 7, 8, 9, 10];
 // Compare employer and employee answers
-var overallScore = compareAnswers(employerAnswers, employeeAnswers);
+const overallScore = compareAnswers(employerAnswers, employeeAnswers);
 console.log("Overall score:", overallScore);
