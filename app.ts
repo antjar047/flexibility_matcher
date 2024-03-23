@@ -18,6 +18,22 @@ interface Employer {
   holidayBookingAvailability: number;
   dailyWorkPatternPossibilities: number;
 }
+// interface Employer {
+//     id: number;
+//     startTime: string;
+//     completionTime: string;
+//     email: string;
+//     name: string;
+//     flexibleWorkingPolicies: string;
+//     numberOfHoursFlexibility: number;
+//     flexibilityOfHours: number;
+//     flexibilityOfVenue: number;
+//     amountOfTravel: number;
+//     distanceOfTravel: number;
+//     overnightStays: number;
+//     holidayBookingAvailability: number;
+//     dailyWorkPatternPossibilities: number;
+// }
 
 // Function to calculate the difference between answers
 function calculateDifference(answer1: number, answer2: number): number {
