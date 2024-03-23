@@ -124,6 +124,7 @@
         // Sort the data based on overall scores in ascending order
         data.sort((a, b) => a.overallScore - b.overallScore);
         
+        
         data.forEach((employer, index) => {
           const employerScoreElement = document.createElement('div');
           employerScoreElement.classList.add('employer-score');
