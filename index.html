@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employer Scores</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
+    .header {
+      background-color: #2196f3;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .header h1 {
+      color: #fff;
+      margin: 0;
+      font-size: 32px;
+      font-weight: 500;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 30px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .employer-scores {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .employer-score {
+      padding: 20px;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-gap: 10px;
+      align-items: center;
+      position: relative;
+    }
+    .employer-score:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .employer-score p {
+      margin: 0;
+    }
+    .employer-id {
+      font-size: 18px;
+      font-weight: 500;
+      color: #333;
+    }
+    .compatibility-score {
+      font-size: 24px;
+      font-weight: 700;
+      color: #2196f3;
+      text-align: right;
+    }
+    .ranking {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #4caf50;
+      color: #fff;
+      font-size: 18px;
+      font-weight: 500;
+      padding: 5px 10px;
+      border-radius: 4px;
+    }
+    .light {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+    }
+    .light-green {
+      background-color: #4caf50;
+    }
+    .light-amber {
+      background-color: #ffc107;
+    }
+    .light-red {
+      background-color: #f44336;
+    }
+    .footer {
+      background-color: #f5f5f5;
+      padding: 20px;
+      text-align: center;
+      font-size: 14px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>Your Best Job Matches</h1>
+  </header>
+  <div class="container">
+    <div class="employer-scores" id="employerScores"></div>
+  </div>
+  <footer class="footer">
+    &copy; 2023 Employer Scores. All rights reserved.
+  </footer>
+
+  <script>
+    fetch('/data')
+      .then(response => response.json())
+      .then(data => {
+        console.log('Fetched employer scores:', data);
+        const employerScoresContainer = document.getElementById('employerScores');
+        
+        // Sort the data based on overall scores in ascending order
+        data.sort((a, b) => a.overallScore - b.overallScore);
+        
+        data.forEach((employer, index) => {
+          const employerScoreElement = document.createElement('div');
+          employerScoreElement.classList.add('employer-score');
+          
+          let lightClass = '';
+          if (employer.overallScore <= 5) {
+            lightClass = 'light-green';
+          } else if (employer.overallScore <= 15) {
+            lightClass = 'light-amber';
+          } else {
+            lightClass = 'light-red';
+          }
+          
+          employerScoreElement.innerHTML = `
+            <div class="ranking">#${index + 1}</div>
+            <div class="light ${lightClass}"></div>
+            <p class="employer-id">Employer ID: ${employer.employerId}</p>
+            <p class="compatibility-score">Compatibility Score: ${employer.overallScore}</p>
+          `;
+          employerScoresContainer.appendChild(employerScoreElement);
+        });
+      })
+      .catch(error => {
+        console.error('Error fetching employer scores:', error);
+      });
+  </script>
+</body>
+</html>

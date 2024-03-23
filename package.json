@@ -9,6 +9,7 @@
     "dev": "tsc && node app.js"
   },
   "dependencies": {
+    "express": "^4.19.1",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

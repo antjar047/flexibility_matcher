@@ -1,5 +1,8 @@
 import { readEmployerFile, readEmployeeFile } from "./readExcel";
 import { ExcelAnswers, QuestionnaireAnswers } from "./interfaces";
+import * as http from 'http'; // Import the 'http' module
+import * as fs from 'fs';
+import * as path from 'path';
 
 function compareAnswers(
   employerAnswers: QuestionnaireAnswers,
@@ -21,8 +24,6 @@ function compareAnswers(
   }, 0);
 }
 
-// Function to compare answers and find the overall scor
-
 // Read the employer data from the Excel file
 const employers: ExcelAnswers[] = readEmployerFile(
   "./Employer_flexibility.xlsx"
@@ -34,7 +35,6 @@ const employees: ExcelAnswers[] = readEmployeeFile(
 );
 
 // Compare each employee with each employer
-// employees.forEach((employee) => {
 const employeeAnswers: QuestionnaireAnswers = {
   numberOfHoursFlexibility: employees[0].numberOfHoursFlexibility,
   flexibilityOfHours: employees[0].flexibilityOfHours,
@@ -45,8 +45,6 @@ const employeeAnswers: QuestionnaireAnswers = {
   holidayBookingAvailability: employees[0].holidayBookingAvailability,
   dailyWorkPatternPossibilities: employees[0].dailyWorkPatternPossibilities,
 };
-
-console.log(`Comparisons for Employee ${employees[0].id}:`);
 
 // Calculate overall scores and store them in an array
 const employerScores = employers.map((employer) => {
@@ -72,12 +70,42 @@ const employerScores = employers.map((employer) => {
 // Sort the employerScores array based on the overall scores in ascending order
 employerScores.sort((a, b) => a.overallScore - b.overallScore);
 
-// Print the sorted employer scores
-employerScores.forEach((employerScore) => {
-  console.log(
-    `- Employer ${employerScore.employerId} overall score: ${employerScore.overallScore}`
-  );
-});
+const server = http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
+    if (req.url === undefined) {
+      // Handle the case when req.url is undefined
+      res.writeHead(400, { 'Content-Type': 'text/plain' });
+      res.end('Bad Request');
+      return;
+    }
+  
+    const filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
+  
+    console.log('Requested file path:', filePath);
+  
+    if (req.url === '/data') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(employerScores));
+    } else {
+      fs.readFile(filePath, (err: NodeJS.ErrnoException | null, data: Buffer) => {
+        if (err) {
+          console.error('Error reading file:', err);
+          res.writeHead(404, { 'Content-Type': 'text/plain' });
+          res.end('404 Not Found');
+        } else {
+          let contentType = 'text/html';
+          if (filePath.endsWith('.css')) {
+            contentType = 'text/css';
+          } else if (filePath.endsWith('.js')) {
+            contentType = 'text/javascript';
+          }
+          res.writeHead(200, { 'Content-Type': contentType });
+          res.end(data);
+        }
+      });
+    }
+  });
 
-console.log(); // Add a blank line between employee comparisons
-// });
+const PORT = 3000;
+server.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}/`);
+});
