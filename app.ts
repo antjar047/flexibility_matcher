@@ -1,23 +1,23 @@
 // Import the readExcelFile function from readexcel.ts
-import { readExcelFile } from "./readexcel";
+import { readExcelFile , Employer} from "./readexcel";
 
 // Define the Employer interface
-interface Employer {
-    id: number;
-    startTime: string;
-    completionTime: string;
-    email: string;
-    name: string;
-    flexibleWorkingPolicies: string;
-    numberOfHoursFlexibility: number;
-    flexibilityOfHours: number;
-    flexibilityOfVenue: number;
-    amountOfTravel: number;
-    distanceOfTravel: number;
-    overnightStays: number;
-    holidayBookingAvailability: number;
-    dailyWorkPatternPossibilities: number;
-}
+// interface Employer {
+//     id: number;
+//     startTime: string;
+//     completionTime: string;
+//     email: string;
+//     name: string;
+//     flexibleWorkingPolicies: string;
+//     numberOfHoursFlexibility: number;
+//     flexibilityOfHours: number;
+//     flexibilityOfVenue: number;
+//     amountOfTravel: number;
+//     distanceOfTravel: number;
+//     overnightStays: number;
+//     holidayBookingAvailability: number;
+//     dailyWorkPatternPossibilities: number;
+// }
 
 // Function to calculate the difference between answers
 function calculateDifference(answer1: number, answer2: number): number {
@@ -42,7 +42,9 @@ function compareAnswers(employerAnswers: number[], employeeAnswers: number[]): n
 const employeeAnswers: number[] = [7, 5, 6, 8, 6, 7, 8, 9, 10];
 
 // Read the employer data from the Excel file
-const employers: Employer[] = readExcelFile("path/to/your/excel/Employer_flexibility.xlsx");
+const employee_flex = "./Employee_flexibility.xlsx"
+const employer_flex = "./Employer_flexibility.xlsx"
+const { employers, employees } = readExcelFile(employer_flex,employee_flex );
 
 // Compare each employer with the employee
 employers.forEach((employer) => {
