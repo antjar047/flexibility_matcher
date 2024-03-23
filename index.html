@@ -42,11 +42,8 @@
       border-radius: 8px;
       background-color: #f9f9f9;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-gap: 10px;
-      align-items: center;
       position: relative;
+      cursor: pointer;
     }
     .employer-score:hover {
       transform: translateY(-5px);
@@ -64,7 +61,7 @@
       font-size: 24px;
       font-weight: 700;
       color: #2196f3;
-      text-align: right;
+      margin-top: 10px;
     }
     .ranking {
       position: absolute;
@@ -94,6 +91,43 @@
     .light-red {
       background-color: #f44336;
     }
+    .category-scores-modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 15% auto;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 600px;
+      position: relative;
+    }
+    .close {
+      color: #aaa;
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close:hover {
+      color: #333;
+    }
+    .category-scores-details {
+      margin-top: 20px;
+    }
+    .category-scores-details p {
+      margin: 5px 0;
+    }
     .footer {
       background-color: #f5f5f5;
       padding: 20px;
@@ -110,6 +144,13 @@
   <div class="container">
     <div class="employer-scores" id="employerScores"></div>
   </div>
+  <div class="category-scores-modal" id="categoryScoresModal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Category Scores</h2>
+      <div class="category-scores-details" id="categoryScoresDetails"></div>
+    </div>
+  </div>
   <footer class="footer">
     &copy; 2023 Employer Scores. All rights reserved.
   </footer>
@@ -120,15 +161,47 @@
       .then(data => {
         console.log('Fetched employer scores:', data);
         const employerScoresContainer = document.getElementById('employerScores');
-        
+        const categoryScoresModal = document.getElementById('categoryScoresModal');
+        const categoryScoresDetails = document.getElementById('categoryScoresDetails');
+        const closeModal = document.getElementsByClassName('close')[0];
+
+        function openModal(employerId) {
+          const employer = data.find(employer => employer.employerId === employerId);
+          if (employer) {
+            categoryScoresDetails.innerHTML = `
+              <p>Number of Hours Flexibility: ${employer.categoryScores.numberOfHoursFlexibility}</p>
+              <p>Flexibility of Hours: ${employer.categoryScores.flexibilityOfHours}</p>
+              <p>Flexibility of Venue: ${employer.categoryScores.flexibilityOfVenue}</p>
+              <p>Amount of Travel: ${employer.categoryScores.amountOfTravel}</p>
+              <p>Distance of Travel: ${employer.categoryScores.distanceOfTravel}</p>
+              <p>Overnight Stays: ${employer.categoryScores.overnightStays}</p>
+              <p>Holiday Booking Availability: ${employer.categoryScores.holidayBookingAvailability}</p>
+              <p>Daily Work Pattern Possibilities: ${employer.categoryScores.dailyWorkPatternPossibilities}</p>
+            `;
+            categoryScoresModal.style.display = 'block';
+          }
+        }
+
+        closeModal.onclick = function() {
+          categoryScoresModal.style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+          if (event.target == categoryScoresModal) {
+            categoryScoresModal.style.display = 'none';
+          }
+        }
+
         // Sort the data based on overall scores in ascending order
         data.sort((a, b) => a.overallScore - b.overallScore);
-        
-        
+
         data.forEach((employer, index) => {
           const employerScoreElement = document.createElement('div');
           employerScoreElement.classList.add('employer-score');
-          
+          employerScoreElement.addEventListener('click', function() {
+            openModal(employer.employerId);
+          });
+
           let lightClass = '';
           if (employer.overallScore <= 5) {
             lightClass = 'light-green';
@@ -137,7 +210,7 @@
           } else {
             lightClass = 'light-red';
           }
-          
+
           employerScoreElement.innerHTML = `
             <div class="ranking">#${index + 1}</div>
             <div class="light ${lightClass}"></div>

@@ -7,21 +7,23 @@ import * as path from 'path';
 function compareAnswers(
   employerAnswers: QuestionnaireAnswers,
   employeeAnswers: QuestionnaireAnswers
-): number {
+): { overallScore: number; categoryScores: { [key: string]: number } } {
   const answerKeys = Object.keys(employerAnswers) as Array<
     keyof QuestionnaireAnswers
   >;
 
-  return answerKeys.reduce((totalDifference, key) => {
+  const categoryScores: { [key: string]: number } = {};
+  let overallScore = 0;
+
+  answerKeys.forEach((key) => {
     const employerAnswer = employerAnswers[key];
     const employeeAnswer = employeeAnswers[key];
+    const difference = employerAnswer - employeeAnswer;
+    categoryScores[key] = difference;
+    overallScore += Math.abs(difference);
+  });
 
-    if (employerAnswer > employeeAnswer) {
-      totalDifference += employerAnswer - employeeAnswer;
-    }
-
-    return totalDifference;
-  }, 0);
+  return { overallScore, categoryScores };
 }
 
 // Read the employer data from the Excel file
@@ -59,11 +61,12 @@ const employerScores = employers.map((employer) => {
     dailyWorkPatternPossibilities: employer.dailyWorkPatternPossibilities,
   };
 
-  const overallScore: number = compareAnswers(employerAnswers, employeeAnswers);
+  const { overallScore, categoryScores } = compareAnswers(employerAnswers, employeeAnswers);
 
   return {
     employerId: employer.id,
-    overallScore: overallScore,
+    overallScore,
+    categoryScores,
   };
 });
 
@@ -71,41 +74,40 @@ const employerScores = employers.map((employer) => {
 employerScores.sort((a, b) => a.overallScore - b.overallScore);
 
 const server = http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
-    if (req.url === undefined) {
-      // Handle the case when req.url is undefined
-      res.writeHead(400, { 'Content-Type': 'text/plain' });
-      res.end('Bad Request');
-      return;
-    }
-  
-    const filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
-  
-    console.log('Requested file path:', filePath);
-  
-    if (req.url === '/data') {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(employerScores));
-    } else {
-      fs.readFile(filePath, (err: NodeJS.ErrnoException | null, data: Buffer) => {
-        if (err) {
-          console.error('Error reading file:', err);
-          res.writeHead(404, { 'Content-Type': 'text/plain' });
-          res.end('404 Not Found');
-        } else {
-          let contentType = 'text/html';
-          if (filePath.endsWith('.css')) {
-            contentType = 'text/css';
-          } else if (filePath.endsWith('.js')) {
-            contentType = 'text/javascript';
-          }
-          res.writeHead(200, { 'Content-Type': contentType });
-          res.end(data);
-        }
-      });
-    }
-  });
+  if (req.url === undefined) {
+    // Handle the case when req.url is undefined
+    res.writeHead(400, { 'Content-Type': 'text/plain' });
+    res.end('Bad Request');
+    return;
+  }
 
-const PORT = 3000;
+  const filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
+  console.log('Requested file path:', filePath);
+
+  if (req.url === '/data') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(employerScores));
+  } else {
+    fs.readFile(filePath, (err: NodeJS.ErrnoException | null, data: Buffer) => {
+      if (err) {
+        console.error('Error reading file:', err);
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        res.end('404 Not Found');
+      } else {
+        let contentType = 'text/html';
+        if (filePath.endsWith('.css')) {
+          contentType = 'text/css';
+        } else if (filePath.endsWith('.js')) {
+          contentType = 'text/javascript';
+        }
+        res.writeHead(200, { 'Content-Type': contentType });
+        res.end(data);
+      }
+    });
+  }
+});
+
+const PORT = 3001;
 server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}/`);
 });

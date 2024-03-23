@@ -29,14 +29,16 @@ const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 function compareAnswers(employerAnswers, employeeAnswers) {
     const answerKeys = Object.keys(employerAnswers);
-    return answerKeys.reduce((totalDifference, key) => {
+    const categoryScores = {};
+    let overallScore = 0;
+    answerKeys.forEach((key) => {
         const employerAnswer = employerAnswers[key];
         const employeeAnswer = employeeAnswers[key];
-        if (employerAnswer > employeeAnswer) {
-            totalDifference += employerAnswer - employeeAnswer;
-        }
-        return totalDifference;
-    }, 0);
+        const difference = employerAnswer - employeeAnswer;
+        categoryScores[key] = difference;
+        overallScore += Math.abs(difference);
+    });
+    return { overallScore, categoryScores };
 }
 // Read the employer data from the Excel file
 const employers = (0, readExcel_1.readEmployerFile)("./Employer_flexibility.xlsx");
@@ -65,10 +67,11 @@ const employerScores = employers.map((employer) => {
         holidayBookingAvailability: employer.holidayBookingAvailability,
         dailyWorkPatternPossibilities: employer.dailyWorkPatternPossibilities,
     };
-    const overallScore = compareAnswers(employerAnswers, employeeAnswers);
+    const { overallScore, categoryScores } = compareAnswers(employerAnswers, employeeAnswers);
     return {
         employerId: employer.id,
-        overallScore: overallScore,
+        overallScore,
+        categoryScores,
     };
 });
 // Sort the employerScores array based on the overall scores in ascending order
@@ -107,7 +110,7 @@ const server = http.createServer((req, res) => {
         });
     }
 });
-const PORT = 3000;
+const PORT = 3001;
 server.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}/`);
 });
