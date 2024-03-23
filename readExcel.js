@@ -23,19 +23,21 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.readExcelFile = void 0;
+exports.readEmployeeFile = exports.readEmployerFile = void 0;
 const XLSX = __importStar(require("xlsx"));
-// Exporting the readExcelFile function
-function readExcelFile(employerFilePath, employeeFilePath) {
-    // Read the employer Excel file
-    const employerWorkbook = XLSX.readFile(employerFilePath);
-    const employerSheetName = employerWorkbook.SheetNames[0];
-    const employerWorksheet = employerWorkbook.Sheets[employerSheetName];
-    const employerData = XLSX.utils.sheet_to_json(employerWorksheet, { header: 1 });
-    // Process the employer data and convert to Employer objects
+// Function to read the Excel file and convert data to Employer objects
+function readEmployerFile(filePath) {
+    // Read the Excel file
+    const workbook = XLSX.readFile(filePath);
+    // Get the first worksheet
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    // Convert the worksheet to a JSON object
+    const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+    // Process the data and convert to Employer objects
     const employers = [];
-    for (let rowIndex = 1; rowIndex < employerData.length; rowIndex++) {
-        const row = employerData[rowIndex];
+    for (let rowIndex = 1; rowIndex < data.length; rowIndex++) {
+        const row = data[rowIndex];
         const employer = {
             id: row[0],
             startTime: row[1],
@@ -54,15 +56,22 @@ function readExcelFile(employerFilePath, employeeFilePath) {
         };
         employers.push(employer);
     }
-    // Read the employee Excel file
-    const employeeWorkbook = XLSX.readFile(employeeFilePath);
-    const employeeSheetName = employeeWorkbook.SheetNames[0];
-    const employeeWorksheet = employeeWorkbook.Sheets[employeeSheetName];
-    const employeeData = XLSX.utils.sheet_to_json(employeeWorksheet, { header: 1 });
-    // Process the employee data and convert to Employee objects
+    return employers;
+}
+exports.readEmployerFile = readEmployerFile;
+// Function to read the Excel file and convert data to Employee objects
+function readEmployeeFile(filePath) {
+    // Read the Excel file
+    const workbook = XLSX.readFile(filePath);
+    // Get the first worksheet
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    // Convert the worksheet to a JSON object
+    const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+    // Process the data and convert to Employee objects
     const employees = [];
-    for (let rowIndex = 1; rowIndex < employeeData.length; rowIndex++) {
-        const row = employeeData[rowIndex];
+    for (let rowIndex = 1; rowIndex < data.length; rowIndex++) {
+        const row = data[rowIndex];
         const employee = {
             id: row[0],
             startTime: row[1],
@@ -81,6 +90,6 @@ function readExcelFile(employerFilePath, employeeFilePath) {
         };
         employees.push(employee);
     }
-    return { employers, employees };
+    return employees;
 }
-exports.readExcelFile = readExcelFile;
+exports.readEmployeeFile = readEmployeeFile;

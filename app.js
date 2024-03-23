@@ -1,24 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// Import the readExcelFile function from readexcel.ts
 const readExcel_1 = require("./readExcel");
-// Define the Employer interface
-// interface Employer {
-//     id: number;
-//     startTime: string;
-//     completionTime: string;
-//     email: string;
-//     name: string;
-//     flexibleWorkingPolicies: string;
-//     numberOfHoursFlexibility: number;
-//     flexibilityOfHours: number;
-//     flexibilityOfVenue: number;
-//     amountOfTravel: number;
-//     distanceOfTravel: number;
-//     overnightStays: number;
-//     holidayBookingAvailability: number;
-//     dailyWorkPatternPossibilities: number;
-// }
 // Function to calculate the difference between answers
 function calculateDifference(answer1, answer2) {
     if (answer1 > answer2) {
@@ -37,24 +19,36 @@ function compareAnswers(employerAnswers, employeeAnswers) {
     }
     return totalDifference;
 }
-// Sample employee data (you would need to define this according to your requirements)
-const employeeAnswers = [7, 5, 6, 8, 6, 7, 8, 9, 10];
 // Read the employer data from the Excel file
-const employee_flex = "./Employee_flexibility.xlsx";
-const employer_flex = "./Employer_flexibility.xlsx";
-const { employers, employees } = (0, readExcel_1.readExcelFile)(employer_flex, employee_flex);
-// Compare each employer with the employee
-employers.forEach((employer) => {
-    const employerAnswers = [
-        employer.numberOfHoursFlexibility,
-        employer.flexibilityOfHours,
-        employer.flexibilityOfVenue,
-        employer.amountOfTravel,
-        employer.distanceOfTravel,
-        employer.overnightStays,
-        employer.holidayBookingAvailability,
-        employer.dailyWorkPatternPossibilities
+const employers = (0, readExcel_1.readEmployerFile)("./Employer_flexibility.xlsx");
+// Read the employee data from the Excel file
+const employees = (0, readExcel_1.readEmployeeFile)("./Employee_flexibility.xlsx");
+// Compare each employee with each employer
+employees.forEach((employee) => {
+    const employeeAnswers = [
+        employee.numberOfHoursFlexibility,
+        employee.flexibilityOfHours,
+        employee.flexibilityOfVenue,
+        employee.amountOfTravel,
+        employee.distanceOfTravel,
+        employee.overnightStays,
+        employee.holidayBookingAvailability,
+        employee.dailyWorkPatternPossibilities
     ];
-    const overallScore = compareAnswers(employerAnswers, employeeAnswers);
-    console.log(`Employer ${employer.id} overall score:`, overallScore);
+    console.log(`Comparisons for Employee ${employee.id}:`);
+    employers.forEach((employer) => {
+        const employerAnswers = [
+            employer.numberOfHoursFlexibility,
+            employer.flexibilityOfHours,
+            employer.flexibilityOfVenue,
+            employer.amountOfTravel,
+            employer.distanceOfTravel,
+            employer.overnightStays,
+            employer.holidayBookingAvailability,
+            employer.dailyWorkPatternPossibilities
+        ];
+        const overallScore = compareAnswers(employerAnswers, employeeAnswers);
+        console.log(`  - Employer ${employer.id} overall score:`, overallScore);
+    });
+    console.log(); // Add a blank line between employee comparisons
 });
