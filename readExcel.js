@@ -52,7 +52,7 @@ function readEmployerFile(filePath) {
             distanceOfTravel: row[10],
             overnightStays: row[11],
             holidayBookingAvailability: row[12],
-            dailyWorkPatternPossibilities: row[13]
+            dailyWorkPatternPossibilities: row[13],
         };
         employers.push(employer);
     }
@@ -86,7 +86,7 @@ function readEmployeeFile(filePath) {
             distanceOfTravel: row[10],
             overnightStays: row[11],
             holidayBookingAvailability: row[12],
-            dailyWorkPatternPossibilities: row[13]
+            dailyWorkPatternPossibilities: row[13],
         };
         employees.push(employee);
     }
