@@ -5,29 +5,36 @@ import * as fs from "fs";
 import * as path from "path";
 
 function compareAnswers(
-  employerAnswers: QuestionnaireAnswers,
-  employeeAnswers: QuestionnaireAnswers
-): { overallScore: number; categoryScores: { [key: string]: number } } {
-  const answerKeys = Object.keys(employerAnswers) as Array<
-    keyof QuestionnaireAnswers
-  >;
-
-  const categoryScores: { [key: string]: number } = {};
-  let overallScore = 0;
-
-  answerKeys.forEach((key) => {
-    const employerAnswer = employerAnswers[key];
-    const employeeAnswer = employeeAnswers[key];
-    const difference = employerAnswer - employeeAnswer;
-    categoryScores[key] = Math.abs(difference);
-
-    if (employerAnswer > employeeAnswer) {
-      overallScore += employerAnswer - employeeAnswer;
+    employerAnswers: QuestionnaireAnswers,
+    employeeAnswers: QuestionnaireAnswers
+  ): { overallScore: number; categoryScores: { [key: string]: number }, scoreDescription: string } {
+    const answerKeys = Object.keys(employerAnswers) as Array<
+      keyof QuestionnaireAnswers
+    >;
+  
+    const categoryScores: { [key: string]: number } = {};
+    let overallScore = 0;
+  
+    answerKeys.forEach((key) => {
+      const employerAnswer = employerAnswers[key];
+      const employeeAnswer = employeeAnswers[key];
+      const difference = employerAnswer - employeeAnswer;
+      categoryScores[key] = Math.abs(difference);
+  
+      if (employerAnswer > employeeAnswer) {
+        overallScore += employerAnswer - employeeAnswer;
+      }
+    });
+  
+    let scoreDescription = 'Bad'; // Default to 'Bad'
+    if (overallScore <= 5) {
+      scoreDescription = 'Good';
+    } else if (overallScore <= 15) {
+      scoreDescription = 'Decent';
     }
-  });
-
-  return { overallScore, categoryScores };
-}
+  
+    return { overallScore, categoryScores, scoreDescription };
+  }
 
 // Read the employer data from the Excel file
 const employers: ExcelAnswers[] = readEmployerFile(

@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Employer Scores</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <!-- Include Chart.js from a CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       font-family: 'Roboto', sans-serif;
@@ -25,6 +27,14 @@
       margin: 0;
       font-size: 32px;
       font-weight: 500;
+      margin-bottom: 20px;
+    }
+    .header h5 {
+      color: #fff;
+      margin: 0;
+      font-size: 20px;
+      font-weight: 500;
+      
     }
     .container {
       max-width: 600px;
@@ -158,7 +168,7 @@
       margin: 5px 0;
     }
     .footer {
-      background-color: rgba(33, 150, 243, 0.5);
+      background-color: rgba(0, 0, 0, 1);
       padding: 20px;
       text-align: center;
       font-size: 14px;
@@ -172,6 +182,7 @@
 <body>
   <header class="header">
     <h1>Employee Preferences</h1>
+    <h5>please answer question on a scale of 1 - 10</h5>
   </header>
   <div class="container">
     <form id="employeeForm">
@@ -230,97 +241,110 @@
     </footer>
   </div>
 
-  <script>
-    const employeeForm = document.getElementById('employeeForm');
-    const resultsSection = document.getElementById('resultsSection');
-
-    employeeForm.addEventListener('submit', (event) => {
-      event.preventDefault();
-
-      const formData = new FormData(employeeForm);
-      const employeePreferences = Object.fromEntries(formData.entries());
-
-      fetch('/employee-preferences', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(employeePreferences)
-      })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Employee preferences submitted successfully');
-        displayResults(data);
-      })
-      .catch(error => {
-        console.error('Error submitting employee preferences:', error);
-      });
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const employeeForm = document.getElementById('employeeForm');
+  const resultsSection = document.getElementById('resultsSection');
+  employeeForm.addEventListener('submit', function(event) {
+    event.preventDefault();
+    const formData = new FormData(employeeForm);
+    const employeePreferences = Object.fromEntries(formData.entries());
+    fetch('/employee-preferences', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(employeePreferences),
+    })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log('Employee preferences submitted successfully', data);
+      displayResults(data);
+    })
+    .catch((error) => {
+      console.error('Error submitting employee preferences:', error);
     });
+  });
 
-    function displayResults(data) {
-      const employerScoresContainer = document.getElementById('employerScores');
-      const categoryScoresModal = document.getElementById('categoryScoresModal');
-      const categoryScoresDetails = document.getElementById('categoryScoresDetails');
-      const closeModal = document.getElementsByClassName('close')[0];
+  function displayResults(data) {
+  const employerScoresContainer = document.getElementById('employerScores');
+  employerScoresContainer.innerHTML = '';
+  data.forEach((employer, index) => {
+    const employerScoreElement = document.createElement('div');
+    employerScoreElement.className = 'employer-score';
 
-      function openModal(employerId) {
-        const employer = data.find(employer => employer.employerId === employerId);
-        if (employer) {
-          categoryScoresDetails.innerHTML = `
-            <p>Number of Hours Flexibility: ${employer.categoryScores.numberOfHoursFlexibility}</p>
-            <p>Flexibility of Hours: ${employer.categoryScores.flexibilityOfHours}</p>
-            <p>Flexibility of Venue: ${employer.categoryScores.flexibilityOfVenue}</p>
-            <p>Amount of Travel: ${employer.categoryScores.amountOfTravel}</p>
-            <p>Distance of Travel: ${employer.categoryScores.distanceOfTravel}</p>
-            <p>Overnight Stays: ${employer.categoryScores.overnightStays}</p>
-            <p>Holiday Booking Availability: ${employer.categoryScores.holidayBookingAvailability}</p>
-            <p>Daily Work Pattern Possibilities: ${employer.categoryScores.dailyWorkPatternPossibilities}</p>
-          `;
-          categoryScoresModal.style.display = 'block';
-        }
-      }
+    let trafficLightClass;
+    let scoreText; // Add this line to declare the variable for the text representation of the score
 
-      closeModal.onclick = function () {
+    // Determine the traffic light class based on the overallScore
+    if (employer.overallScore <= 5) {
+      trafficLightClass = 'light-green';
+      scoreText = 'Good'; // Set the scoreText for scores <= 5
+    } else if (employer.overallScore <= 15) {
+      trafficLightClass = 'light-amber';
+      scoreText = 'Decent'; // Set the scoreText for scores between 6 and 15
+    } else {
+      trafficLightClass = 'light-red';
+      scoreText = 'Bad'; // Set the scoreText for scores > 15
+    }
+
+    // Modify the compatibility-score line to use scoreText instead of employer.overallScore
+    employerScoreElement.innerHTML = `
+      <div class="ranking">#${index + 1}</div>
+      <div class="light ${trafficLightClass}"></div>
+      <p class="employer-id">Employer ID: ${employer.employerId}</p>
+      <p class="compatibility-score">Compatibility Score: ${scoreText}</p> 
+    `;
+    employerScoreElement.addEventListener('click', function() {
+      openModal(employer);
+    });
+    employerScoresContainer.appendChild(employerScoreElement);
+  });
+  resultsSection.classList.remove('hidden');
+}
+
+
+  function openModal(employer) {
+    const categoryScoresModal = document.getElementById('categoryScoresModal');
+    const categoryScoresDetails = document.getElementById('categoryScoresDetails');
+    const closeModal = document.getElementsByClassName('close')[0];
+
+    categoryScoresDetails.innerHTML = '<canvas id="categoryScoresChart"></canvas>';
+    const ctx = document.getElementById('categoryScoresChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: Object.keys(employer.categoryScores),
+        datasets: [{
+          label: 'Score',
+          data: Object.values(employer.categoryScores),
+          backgroundColor: 'rgba(54, 162, 235, 0.2)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1,
+        }],
+      },
+      options: {
+        indexAxis: 'y',
+        scales: {
+          x: {
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+    categoryScoresModal.style.display = 'block';
+
+    closeModal.onclick = function() {
+      categoryScoresModal.style.display = 'none';
+    };
+
+    window.onclick = function(event) {
+      if (event.target == categoryScoresModal) {
         categoryScoresModal.style.display = 'none';
       }
+    };
+  }
+</script>
 
-      window.onclick = function (event) {
-        if (event.target == categoryScoresModal) {
-          categoryScoresModal.style.display = 'none';
-        }
-      }
-
-      // Sort the data based on overall scores in ascending order
-      data.sort((a, b) => a.overallScore - b.overallScore);
-
-      employerScoresContainer.innerHTML = '';
-      data.forEach((employer, index) => {
-        const employerScoreElement = document.createElement('div');
-        employerScoreElement.classList.add('employer-score');
-        employerScoreElement.addEventListener('click', function () {
-          openModal(employer.employerId);
-        });
-
-        let lightClass = '';
-        if (employer.overallScore <= 5) {
-          lightClass = 'light-green';
-        } else if (employer.overallScore <= 15) {
-          lightClass = 'light-amber';
-        } else {
-          lightClass = 'light-red';
-        }
-
-        employerScoreElement.innerHTML = `
-          <div class="ranking">#${index + 1}</div>
-          <div class="light ${lightClass}"></div>
-          <p class="employer-id">Employer ID: ${employer.employerId}</p>
-          <p class="compatibility-score">Compatibility Score: ${employer.overallScore}</p>
-        `;
-        employerScoresContainer.appendChild(employerScoreElement);
-      });
-
-      resultsSection.classList.remove('hidden');
-    }
-  </script>
 </body>
 </html>
