@@ -40,7 +40,14 @@ function compareAnswers(employerAnswers, employeeAnswers) {
             overallScore += employerAnswer - employeeAnswer;
         }
     });
-    return { overallScore, categoryScores };
+    let scoreDescription = 'Bad'; // Default to 'Bad'
+    if (overallScore <= 5) {
+        scoreDescription = 'Good';
+    }
+    else if (overallScore <= 15) {
+        scoreDescription = 'Decent';
+    }
+    return { overallScore, categoryScores, scoreDescription };
 }
 // Read the employer data from the Excel file
 const employers = (0, readExcel_1.readEmployerFile)("./Employer_flexibility.xlsx");
