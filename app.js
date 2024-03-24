@@ -42,8 +42,9 @@ function compareAnswers(employerAnswers, employeeAnswers) {
     });
     return { overallScore, categoryScores };
 }
-// Read the employer data from the Excel file
-const employers = (0, readExcel_1.readEmployerFile)("./Employer_flexibility.xlsx");
+const employers = [];
+const employeeExcel = (0, readExcel_1.readEmployerFile)("./Employee_flexibility.xlsx");
+const employerExcel = (0, readExcel_1.readEmployerFile)("./Employer_flexibility.xlsx");
 let employeeAnswers = {
     numberOfHoursFlexibility: 0,
     flexibilityOfHours: 0,
@@ -54,34 +55,58 @@ let employeeAnswers = {
     holidayBookingAvailability: 0,
     dailyWorkPatternPossibilities: 0,
 };
+let employerAnswers = {
+    numberOfHoursFlexibility: 0,
+    flexibilityOfHours: 0,
+    flexibilityOfVenue: 0,
+    amountOfTravel: 0,
+    distanceOfTravel: 0,
+    overnightStays: 0,
+    holidayBookingAvailability: 0,
+    dailyWorkPatternPossibilities: 0,
+};
 function calculateEmployerScores() {
-    return employers.map((employer) => {
-        const employerAnswers = {
-            numberOfHoursFlexibility: employer.numberOfHoursFlexibility,
-            flexibilityOfHours: employer.flexibilityOfHours,
-            flexibilityOfVenue: employer.flexibilityOfVenue,
-            amountOfTravel: employer.amountOfTravel,
-            distanceOfTravel: employer.distanceOfTravel,
-            overnightStays: employer.overnightStays,
-            holidayBookingAvailability: employer.holidayBookingAvailability,
-            dailyWorkPatternPossibilities: employer.dailyWorkPatternPossibilities,
-        };
-        const { overallScore, categoryScores } = compareAnswers(employerAnswers, employeeAnswers);
+    return employerExcel.map((employer, index) => {
+        const { overallScore, categoryScores } = compareAnswers(employer, employeeAnswers);
         return {
-            employerId: employer.id,
+            employerId: index + 1,
+            overallScore,
+            categoryScores,
+        };
+    });
+}
+function calculateEmployeeScores() {
+    return employeeExcel.map((employer, index) => {
+        const { overallScore, categoryScores } = compareAnswers(employer, employerAnswers);
+        return {
+            employerId: index + 1,
             overallScore,
             categoryScores,
         };
     });
 }
 let employerScores = calculateEmployerScores();
+let employeeScores = calculateEmployeeScores();
 const server = http.createServer((req, res) => {
     if (req.url === undefined) {
         res.writeHead(400, { "Content-Type": "text/plain" });
         res.end("Bad Request");
         return;
     }
-    if (req.method === "POST" && req.url === "/employee-preferences") {
+    if (req.method === "POST" && req.url === "/employer-flexibility") {
+        let body = "";
+        req.on("data", (chunk) => {
+            body += chunk.toString();
+        });
+        req.on("end", () => {
+            const employerFlexibility = JSON.parse(body);
+            employers.push(employerFlexibility);
+            employerScores = calculateEmployeeScores();
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify(employerScores));
+        });
+    }
+    else if (req.method === "POST" && req.url === "/employee-preferences") {
         let body = "";
         req.on("data", (chunk) => {
             body += chunk.toString();
@@ -89,11 +114,10 @@ const server = http.createServer((req, res) => {
         req.on("end", () => {
             const employeePreferences = JSON.parse(body);
             employeeAnswers = Object.assign(Object.assign({}, employeeAnswers), employeePreferences);
-            employerScores = calculateEmployerScores();
-            console.log("employerScores", employerScores);
-            employerScores.sort((a, b) => a.overallScore - b.overallScore);
+            employeeScores = calculateEmployerScores();
+            employeeScores.sort((a, b) => a.overallScore - b.overallScore);
             res.writeHead(200, { "Content-Type": "application/json" });
-            res.end(JSON.stringify(employerScores));
+            res.end(JSON.stringify(employeeScores));
         });
     }
     else {

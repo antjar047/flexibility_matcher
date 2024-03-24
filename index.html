@@ -167,48 +167,114 @@
     .hidden {
       display: none;
     }
+    .user-type-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 40px;
+    }
+    .user-type-button {
+      padding: 15px 30px;
+      font-size: 20px;
+      font-weight: 500;
+      color: #fff;
+      background-color: #2196f3;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 0 10px;
+    }
   </style>
 </head>
 <body>
   <header class="header">
-    <h1>Employee Preferences</h1>
+    <h1>Flexibility Matcher</h1>
   </header>
-  <div class="container">
-    <form id="employeeForm">
-      <div class="form-group">
-        <label for="numberOfHoursFlexibility">Number of Hours Flexibility:</label>
-        <input type="number" id="numberOfHoursFlexibility" name="numberOfHoursFlexibility" required>
-      </div>
-      <div class="form-group">
-        <label for="flexibilityOfHours">Flexibility of Hours:</label>
-        <input type="number" id="flexibilityOfHours" name="flexibilityOfHours" required>
-      </div>
-      <div class="form-group">
-        <label for="flexibilityOfVenue">Flexibility Of Venue:</label>
-        <input type="number" id="flexibilityOfVenue" name="flexibilityOfVenue" required>
-      </div>
-      <div class="form-group">
-        <label for="amountOfTravel">Amount Of Travel:</label>
-        <input type="number" id="amountOfTravel" name="amountOfTravel" required>
-      </div>
-      <div class="form-group">
-        <label for="distanceOfTravel">Distance Of Travel:</label>
-        <input type="number" id="distanceOfTravel" name="distanceOfTravel" required>
-      </div>
-      <div class="form-group">
-        <label for="overnightStays">Overnight Stays:</label>
-        <input type="number" id="overnightStays" name="overnightStays" required>
-      </div>
-      <div class="form-group">
-        <label for="holidayBookingAvailability">Holiday Booking Availability:</label>
-        <input type="number" id="holidayBookingAvailability" name="holidayBookingAvailability" required>
-      </div>
-      <div class="form-group">
-        <label for="dailyWorkPatternPossibilities">Daily Work Pattern Possibilities:</label>
-        <input type="number" id="dailyWorkPatternPossibilities" name="dailyWorkPatternPossibilities" required>
-      </div>
-      <button type="submit">Submit</button>
-    </form>
+  <div class="user-type-container">
+    <button class="user-type-button" id="employerButton">Employer</button>
+    <button class="user-type-button" id="employeeButton">Employee</button>
+  </div>
+
+  <div id="employerFormSection" class="hidden">
+    <div class="container">
+      <h2>Employer Flexibility</h2>
+      <form id="employerForm">
+        <div class="form-group">
+          <label for="employerNumberOfHoursFlexibility">Number of Hours Flexibility:</label>
+          <input type="number" id="employerNumberOfHoursFlexibility" name="numberOfHoursFlexibility" required>
+        </div>
+        <div class="form-group">
+          <label for="employerFlexibilityOfHours">Flexibility of Hours:</label>
+          <input type="number" id="employerFlexibilityOfHours" name="flexibilityOfHours" required>
+        </div>
+        <div class="form-group">
+          <label for="employerFlexibilityOfVenue">Flexibility Of Venue:</label>
+          <input type="number" id="employerFlexibilityOfVenue" name="flexibilityOfVenue" required>
+        </div>
+        <div class="form-group">
+          <label for="employerAmountOfTravel">Amount Of Travel:</label>
+          <input type="number" id="employerAmountOfTravel" name="amountOfTravel" required>
+        </div>
+        <div class="form-group">
+          <label for="employerDistanceOfTravel">Distance Of Travel:</label>
+          <input type="number" id="employerDistanceOfTravel" name="distanceOfTravel" required>
+        </div>
+        <div class="form-group">
+          <label for="employerOvernightStays">Overnight Stays:</label>
+          <input type="number" id="employerOvernightStays" name="overnightStays" required>
+        </div>
+        <div class="form-group">
+          <label for="employerHolidayBookingAvailability">Holiday Booking Availability:</label>
+          <input type="number" id="employerHolidayBookingAvailability" name="holidayBookingAvailability" required>
+        </div>
+        <div class="form-group">
+          <label for="employerDailyWorkPatternPossibilities">Daily Work Pattern Possibilities:</label>
+          <input type="number" id="employerDailyWorkPatternPossibilities" name="dailyWorkPatternPossibilities" required>
+        </div>
+        <button type="submit">Submit</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="employeeFormSection" class="hidden">
+    <div class="container">
+      <h2>Employee Preferences</h2>
+      <form id="employeeForm">
+        <div class="form-group">
+          <label for="numberOfHoursFlexibility">Number of Hours Flexibility:</label>
+          <input type="number" id="numberOfHoursFlexibility" name="numberOfHoursFlexibility" required>
+        </div>
+        <div class="form-group">
+          <label for="flexibilityOfHours">Flexibility of Hours:</label>
+          <input type="number" id="flexibilityOfHours" name="flexibilityOfHours" required>
+        </div>
+        <div class="form-group">
+          <label for="flexibilityOfVenue">Flexibility Of Venue:</label>
+          <input type="number" id="flexibilityOfVenue" name="flexibilityOfVenue" required>
+        </div>
+        <div class="form-group">
+          <label for="amountOfTravel">Amount Of Travel:</label>
+          <input type="number" id="amountOfTravel" name="amountOfTravel" required>
+        </div>
+        <div class="form-group">
+          <label for="distanceOfTravel">Distance Of Travel:</label>
+          <input type="number" id="distanceOfTravel" name="distanceOfTravel" required>
+        </div>
+        <div class="form-group">
+          <label for="overnightStays">Overnight Stays:</label>
+          <input type="number" id="overnightStays" name="overnightStays" required>
+        </div>
+        <div class="form-group">
+          <label for="holidayBookingAvailability">Holiday Booking Availability:</label>
+          <input type="number" id="holidayBookingAvailability" name="holidayBookingAvailability" required>
+        </div>
+        <div class="form-group">
+          <label for="dailyWorkPatternPossibilities">Daily Work Pattern Possibilities:</label>
+          <input type="number" id="dailyWorkPatternPossibilities" name="dailyWorkPatternPossibilities" required>
+        </div>
+        <button type="submit">Submit</button>
+      </form>
+    </div>
   </div>
 
   <div id="resultsSection" class="hidden">
@@ -231,8 +297,48 @@
   </div>
 
   <script>
+    const employerButton = document.getElementById('employerButton');
+    const employeeButton = document.getElementById('employeeButton');
+    const employerFormSection = document.getElementById('employerFormSection');
+    const employeeFormSection = document.getElementById('employeeFormSection');
+    const employerForm = document.getElementById('employerForm');
     const employeeForm = document.getElementById('employeeForm');
     const resultsSection = document.getElementById('resultsSection');
+
+    employerButton.addEventListener('click', () => {
+      employerFormSection.classList.remove('hidden');
+      employeeFormSection.classList.add('hidden');
+      resultsSection.classList.add('hidden');
+    });
+
+    employeeButton.addEventListener('click', () => {
+      employeeFormSection.classList.remove('hidden');
+      employerFormSection.classList.add('hidden');
+      resultsSection.classList.add('hidden');
+    });
+
+    employerForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      const formData = new FormData(employerForm);
+      const employerFlexibility = Object.fromEntries(formData.entries());
+
+      fetch('/employer-flexibility', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(employerFlexibility)
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Employer flexibility submitted successfully');
+        displayResults(data);
+      })
+      .catch(error => {
+        console.error('Error submitting employer flexibility:', error);
+      });
+    });
 
     employeeForm.addEventListener('submit', (event) => {
       event.preventDefault();
@@ -290,7 +396,6 @@
         }
       }
 
-      // Sort the data based on overall scores in ascending order
       data.sort((a, b) => a.overallScore - b.overallScore);
 
       employerScoresContainer.innerHTML = '';
