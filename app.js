@@ -24,7 +24,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const readExcel_1 = require("./readExcel");
-const http = __importStar(require("http")); // Import the 'http' module
+const http = __importStar(require("http"));
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 function compareAnswers(employerAnswers, employeeAnswers) {
@@ -35,81 +35,94 @@ function compareAnswers(employerAnswers, employeeAnswers) {
         const employerAnswer = employerAnswers[key];
         const employeeAnswer = employeeAnswers[key];
         const difference = employerAnswer - employeeAnswer;
-        categoryScores[key] = Math.abs(difference); // Adjusted to take absolute difference
+        categoryScores[key] = Math.abs(difference);
         if (employerAnswer > employeeAnswer) {
-            overallScore += employerAnswer - employeeAnswer; // Include this for overall score calculation
+            overallScore += employerAnswer - employeeAnswer;
         }
     });
     return { overallScore, categoryScores };
 }
 // Read the employer data from the Excel file
 const employers = (0, readExcel_1.readEmployerFile)("./Employer_flexibility.xlsx");
-// Read the employee data from the Excel file
-const employees = (0, readExcel_1.readEmployeeFile)("./Employee_flexibility.xlsx");
-// Compare each employee with each employer
-const employeeAnswers = {
-    numberOfHoursFlexibility: employees[0].numberOfHoursFlexibility,
-    flexibilityOfHours: employees[0].flexibilityOfHours,
-    flexibilityOfVenue: employees[0].flexibilityOfVenue,
-    amountOfTravel: employees[0].amountOfTravel,
-    distanceOfTravel: employees[0].distanceOfTravel,
-    overnightStays: employees[0].overnightStays,
-    holidayBookingAvailability: employees[0].holidayBookingAvailability,
-    dailyWorkPatternPossibilities: employees[0].dailyWorkPatternPossibilities,
+let employeeAnswers = {
+    numberOfHoursFlexibility: 0,
+    flexibilityOfHours: 0,
+    flexibilityOfVenue: 0,
+    amountOfTravel: 0,
+    distanceOfTravel: 0,
+    overnightStays: 0,
+    holidayBookingAvailability: 0,
+    dailyWorkPatternPossibilities: 0,
 };
-// Calculate overall scores and store them in an array
-const employerScores = employers.map((employer) => {
-    const employerAnswers = {
-        numberOfHoursFlexibility: employer.numberOfHoursFlexibility,
-        flexibilityOfHours: employer.flexibilityOfHours,
-        flexibilityOfVenue: employer.flexibilityOfVenue,
-        amountOfTravel: employer.amountOfTravel,
-        distanceOfTravel: employer.distanceOfTravel,
-        overnightStays: employer.overnightStays,
-        holidayBookingAvailability: employer.holidayBookingAvailability,
-        dailyWorkPatternPossibilities: employer.dailyWorkPatternPossibilities,
-    };
-    const { overallScore, categoryScores } = compareAnswers(employerAnswers, employeeAnswers);
-    return {
-        employerId: employer.id,
-        overallScore,
-        categoryScores,
-    };
-});
-// Sort the employerScores array based on the overall scores in ascending order
-employerScores.sort((a, b) => a.overallScore - b.overallScore);
+function calculateEmployerScores() {
+    return employers.map((employer) => {
+        const employerAnswers = {
+            numberOfHoursFlexibility: employer.numberOfHoursFlexibility,
+            flexibilityOfHours: employer.flexibilityOfHours,
+            flexibilityOfVenue: employer.flexibilityOfVenue,
+            amountOfTravel: employer.amountOfTravel,
+            distanceOfTravel: employer.distanceOfTravel,
+            overnightStays: employer.overnightStays,
+            holidayBookingAvailability: employer.holidayBookingAvailability,
+            dailyWorkPatternPossibilities: employer.dailyWorkPatternPossibilities,
+        };
+        const { overallScore, categoryScores } = compareAnswers(employerAnswers, employeeAnswers);
+        return {
+            employerId: employer.id,
+            overallScore,
+            categoryScores,
+        };
+    });
+}
+let employerScores = calculateEmployerScores();
 const server = http.createServer((req, res) => {
     if (req.url === undefined) {
-        // Handle the case when req.url is undefined
-        res.writeHead(400, { 'Content-Type': 'text/plain' });
-        res.end('Bad Request');
+        res.writeHead(400, { "Content-Type": "text/plain" });
+        res.end("Bad Request");
         return;
     }
-    const filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
-    console.log('Requested file path:', filePath);
-    if (req.url === '/data') {
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(employerScores));
+    if (req.method === "POST" && req.url === "/employee-preferences") {
+        let body = "";
+        req.on("data", (chunk) => {
+            body += chunk.toString();
+        });
+        req.on("end", () => {
+            const employeePreferences = JSON.parse(body);
+            employeeAnswers = Object.assign(Object.assign({}, employeeAnswers), employeePreferences);
+            employerScores = calculateEmployerScores();
+            console.log("employerScores", employerScores);
+            employerScores.sort((a, b) => a.overallScore - b.overallScore);
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify(employerScores));
+        });
     }
     else {
-        fs.readFile(filePath, (err, data) => {
-            if (err) {
-                console.error('Error reading file:', err);
-                res.writeHead(404, { 'Content-Type': 'text/plain' });
-                res.end('404 Not Found');
-            }
-            else {
-                let contentType = 'text/html';
-                if (filePath.endsWith('.css')) {
-                    contentType = 'text/css';
+        const filePath = path.join(__dirname, req.url === "/" ? "index.html" : req.url);
+        console.log("Requested file path:", filePath);
+        if (req.url === "/data") {
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify(employerScores));
+        }
+        else {
+            fs.readFile(filePath, (err, data) => {
+                if (err) {
+                    console.error("Error reading file:", err);
+                    res.writeHead(404, { "Content-Type": "text/plain" });
+                    res.end("404 Not Found");
                 }
-                else if (filePath.endsWith('.js')) {
-                    contentType = 'text/javascript';
+                else {
+                    let contentType = "text/html";
+                    if (filePath.endsWith(".css")) {
+                        contentType = "text/css";
+                    }
+                    else if (filePath.endsWith(".js")) {
+                        contentType = "text/javascript";
+                    }
+                    res.writeHead(200, { "Content-Type": contentType });
+                    res.end(data);
                 }
-                res.writeHead(200, { 'Content-Type': contentType });
-                res.end(data);
-            }
-        });
+            });
+        }
     }
 });
 const PORT = 3001;

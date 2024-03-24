@@ -1,115 +1,137 @@
-import { readEmployerFile, readEmployeeFile } from "./readExcel";
+import { readEmployerFile } from "./readExcel";
 import { ExcelAnswers, QuestionnaireAnswers } from "./interfaces";
-import * as http from 'http'; // Import the 'http' module
-import * as fs from 'fs';
-import * as path from 'path';
+import * as http from "http";
+import * as fs from "fs";
+import * as path from "path";
 
 function compareAnswers(
-    employerAnswers: QuestionnaireAnswers,
-    employeeAnswers: QuestionnaireAnswers
-  ): { overallScore: number; categoryScores: { [key: string]: number } } {
-    const answerKeys = Object.keys(employerAnswers) as Array<
-      keyof QuestionnaireAnswers
-    >;
-  
-    const categoryScores: { [key: string]: number } = {};
-    let overallScore = 0;
-  
-    answerKeys.forEach((key) => {
-      const employerAnswer = employerAnswers[key];
-      const employeeAnswer = employeeAnswers[key];
-      const difference = employerAnswer - employeeAnswer;
-      categoryScores[key] = Math.abs(difference); // Adjusted to take absolute difference
-  
-      if (employerAnswer > employeeAnswer) {
-        overallScore += employerAnswer - employeeAnswer; // Include this for overall score calculation
-      }
-    });
-  
-    return { overallScore, categoryScores };
-  }
-  
+  employerAnswers: QuestionnaireAnswers,
+  employeeAnswers: QuestionnaireAnswers
+): { overallScore: number; categoryScores: { [key: string]: number } } {
+  const answerKeys = Object.keys(employerAnswers) as Array<
+    keyof QuestionnaireAnswers
+  >;
+
+  const categoryScores: { [key: string]: number } = {};
+  let overallScore = 0;
+
+  answerKeys.forEach((key) => {
+    const employerAnswer = employerAnswers[key];
+    const employeeAnswer = employeeAnswers[key];
+    const difference = employerAnswer - employeeAnswer;
+    categoryScores[key] = Math.abs(difference);
+
+    if (employerAnswer > employeeAnswer) {
+      overallScore += employerAnswer - employeeAnswer;
+    }
+  });
+
+  return { overallScore, categoryScores };
+}
 
 // Read the employer data from the Excel file
 const employers: ExcelAnswers[] = readEmployerFile(
   "./Employer_flexibility.xlsx"
 );
 
-// Read the employee data from the Excel file
-const employees: ExcelAnswers[] = readEmployeeFile(
-  "./Employee_flexibility.xlsx"
-);
-
-// Compare each employee with each employer
-const employeeAnswers: QuestionnaireAnswers = {
-  numberOfHoursFlexibility: employees[0].numberOfHoursFlexibility,
-  flexibilityOfHours: employees[0].flexibilityOfHours,
-  flexibilityOfVenue: employees[0].flexibilityOfVenue,
-  amountOfTravel: employees[0].amountOfTravel,
-  distanceOfTravel: employees[0].distanceOfTravel,
-  overnightStays: employees[0].overnightStays,
-  holidayBookingAvailability: employees[0].holidayBookingAvailability,
-  dailyWorkPatternPossibilities: employees[0].dailyWorkPatternPossibilities,
+let employeeAnswers: QuestionnaireAnswers = {
+  numberOfHoursFlexibility: 0,
+  flexibilityOfHours: 0,
+  flexibilityOfVenue: 0,
+  amountOfTravel: 0,
+  distanceOfTravel: 0,
+  overnightStays: 0,
+  holidayBookingAvailability: 0,
+  dailyWorkPatternPossibilities: 0,
 };
 
-// Calculate overall scores and store them in an array
-const employerScores = employers.map((employer) => {
-  const employerAnswers: QuestionnaireAnswers = {
-    numberOfHoursFlexibility: employer.numberOfHoursFlexibility,
-    flexibilityOfHours: employer.flexibilityOfHours,
-    flexibilityOfVenue: employer.flexibilityOfVenue,
-    amountOfTravel: employer.amountOfTravel,
-    distanceOfTravel: employer.distanceOfTravel,
-    overnightStays: employer.overnightStays,
-    holidayBookingAvailability: employer.holidayBookingAvailability,
-    dailyWorkPatternPossibilities: employer.dailyWorkPatternPossibilities,
-  };
+function calculateEmployerScores() {
+  return employers.map((employer) => {
+    const employerAnswers: QuestionnaireAnswers = {
+      numberOfHoursFlexibility: employer.numberOfHoursFlexibility,
+      flexibilityOfHours: employer.flexibilityOfHours,
+      flexibilityOfVenue: employer.flexibilityOfVenue,
+      amountOfTravel: employer.amountOfTravel,
+      distanceOfTravel: employer.distanceOfTravel,
+      overnightStays: employer.overnightStays,
+      holidayBookingAvailability: employer.holidayBookingAvailability,
+      dailyWorkPatternPossibilities: employer.dailyWorkPatternPossibilities,
+    };
 
-  const { overallScore, categoryScores } = compareAnswers(employerAnswers, employeeAnswers);
+    const { overallScore, categoryScores } = compareAnswers(
+      employerAnswers,
+      employeeAnswers
+    );
 
-  return {
-    employerId: employer.id,
-    overallScore,
-    categoryScores,
-  };
-});
+    return {
+      employerId: employer.id,
+      overallScore,
+      categoryScores,
+    };
+  });
+}
 
-// Sort the employerScores array based on the overall scores in ascending order
-employerScores.sort((a, b) => a.overallScore - b.overallScore);
+let employerScores = calculateEmployerScores();
 
-const server = http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
-  if (req.url === undefined) {
-    // Handle the case when req.url is undefined
-    res.writeHead(400, { 'Content-Type': 'text/plain' });
-    res.end('Bad Request');
-    return;
-  }
+const server = http.createServer(
+  (req: http.IncomingMessage, res: http.ServerResponse) => {
+    if (req.url === undefined) {
+      res.writeHead(400, { "Content-Type": "text/plain" });
+      res.end("Bad Request");
+      return;
+    }
 
-  const filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
-  console.log('Requested file path:', filePath);
+    if (req.method === "POST" && req.url === "/employee-preferences") {
+      let body = "";
+      req.on("data", (chunk) => {
+        body += chunk.toString();
+      });
+      req.on("end", () => {
+        const employeePreferences = JSON.parse(body);
+        employeeAnswers = {
+          ...employeeAnswers,
+          ...employeePreferences,
+        };
+        employerScores = calculateEmployerScores();
+        console.log("employerScores", employerScores);
+        employerScores.sort((a, b) => a.overallScore - b.overallScore);
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(employerScores));
+      });
+    } else {
+      const filePath = path.join(
+        __dirname,
+        req.url === "/" ? "index.html" : req.url
+      );
+      console.log("Requested file path:", filePath);
 
-  if (req.url === '/data') {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(employerScores));
-  } else {
-    fs.readFile(filePath, (err: NodeJS.ErrnoException | null, data: Buffer) => {
-      if (err) {
-        console.error('Error reading file:', err);
-        res.writeHead(404, { 'Content-Type': 'text/plain' });
-        res.end('404 Not Found');
+      if (req.url === "/data") {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(employerScores));
       } else {
-        let contentType = 'text/html';
-        if (filePath.endsWith('.css')) {
-          contentType = 'text/css';
-        } else if (filePath.endsWith('.js')) {
-          contentType = 'text/javascript';
-        }
-        res.writeHead(200, { 'Content-Type': contentType });
-        res.end(data);
+        fs.readFile(
+          filePath,
+          (err: NodeJS.ErrnoException | null, data: Buffer) => {
+            if (err) {
+              console.error("Error reading file:", err);
+              res.writeHead(404, { "Content-Type": "text/plain" });
+              res.end("404 Not Found");
+            } else {
+              let contentType = "text/html";
+              if (filePath.endsWith(".css")) {
+                contentType = "text/css";
+              } else if (filePath.endsWith(".js")) {
+                contentType = "text/javascript";
+              }
+              res.writeHead(200, { "Content-Type": contentType });
+              res.end(data);
+            }
+          }
+        );
       }
-    });
+    }
   }
-});
+);
 
 const PORT = 3001;
 server.listen(PORT, () => {
